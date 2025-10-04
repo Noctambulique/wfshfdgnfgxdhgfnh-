@@ -1,415 +1,251 @@
-<!--
-Bell Madness - Browser clone (single-file)
-Project: GitHub-ready single file (index.html)
-Author: Generated for user
-
-Instructions:
-- Save this content as `index.html` at the root of your GitHub Pages repo.
-- Optional: add an LICENSE (MIT) and a README.md describing the project and credits.
-- All game data is stored in localStorage; no backend required.
-
-Features included:
-- Click/tap interactions to "prank" the neighbor (knock, ring, mailbox...) 
-- Coins, hints, and unlockable doorbells
-- Reactions system with combinatory triggers
-- Simple, responsive UI and animations
-- Save/load progress, reset button
-
-Note: This is an original, small implementation inspired by Bell Madness mechanics. It is NOT a byte-for-byte copy of any existing game's source.
--->
-
 <!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bell Madness — Clone léger</title>
+  <title>Map style Pokémon Diamant — demo</title>
   <style>
-    :root{
-      --bg:#0f1724; --card:#0b1220; --accent:#fbbf24; --muted:#98a8b9; --glass: rgba(255,255,255,0.03);
-      --accent-2:#60a5fa; --success:#34d399;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;color:#e6eef6;background:linear-gradient(180deg,var(--bg),#07101a);}
-    .wrap{max-width:1100px;margin:18px auto;padding:18px;display:grid;grid-template-columns:1fr 360px;gap:18px}
-    header{grid-column:1/-1;display:flex;align-items:center;gap:12px}
-    h1{font-size:20px;margin:0}
-    .main-card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
-    .game-area{height:520px;display:flex;flex-direction:column;gap:12px}
-
-    /* Neighbour house area */
-    .house{flex:1;background:linear-gradient(180deg,#0b2236,#07202a);border-radius:10px;padding:16px;position:relative;overflow:hidden;display:flex}
-    .porch{width:56%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px}
-    .door{width:180px;height:260px;border-radius:6px;background:linear-gradient(180deg,#6b3b1b,#3b1d0d);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:inset 0 -8px 30px rgba(0,0,0,0.5)}
-    .door .bell{position:absolute;right:14px;top:110px;width:46px;height:46px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700}
-    .window{width:44%;display:flex;align-items:center;justify-content:center}
-    .reactions-log{position:absolute;left:12px;top:12px;background:var(--glass);backdrop-filter: blur(6px);padding:8px;border-radius:8px;max-width:38%;font-size:13px;color:var(--muted)}
-
-    .controls{display:flex;flex-wrap:wrap;gap:10px}
-    .btn{background:linear-gradient(180deg,#0f3a54,#0b2940);border:1px solid rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;color:#e6eef6;cursor:pointer;min-width:110px;text-align:center}
-    .btn:active{transform:translateY(1px)}
-    .btn.big{min-width:160px}
-
-    /* Side panel */
-    .side{height:100%;display:flex;flex-direction:column;gap:12px}
-    .panel{background:var(--card);border-radius:10px;padding:12px}
-    .stats{display:flex;gap:8px;align-items:center}
-    .coin{display:flex;gap:6px;align-items:center;font-weight:700;color:var(--accent)}
-    .inventory{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-    .item{padding:6px 8px;border-radius:8px;background:var(--glass);font-size:13px}
-    .progress{height:10px;border-radius:999px;background:rgba(255,255,255,0.05);overflow:hidden}
-    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0%}
-
-    footer{grid-column:1/-1;margin-top:6px;color:var(--muted);font-size:13px}
-
-    /* Reaction animations */
-    .pop{animation:pop .8s ease}
-    @keyframes pop{0%{transform:translateY(0) scale(1);opacity:0}30%{opacity:1;transform:translateY(-18px) scale(1.02)}100%{transform:translateY(-40px) scale(1);opacity:0}}
-
-    /* responsive */
-    @media (max-width:980px){.wrap{grid-template-columns:1fr;}.side{order:2}}
+    :root{--tile:32px;--scale:2}
+    html,body{height:100%;margin:0;background:#2b2f33;display:flex;align-items:center;justify-content:center;font-family:Inter,system-ui,Arial}
+    .stage{background:#9bbf6b;padding:12px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.6);}
+    canvas{display:block;background:#8fc54c;border:6px solid #3a5a2a;border-radius:8px; image-rendering: pixelated; width: calc(var(--tile) * 20 * var(--scale)); height: calc(var(--tile) * 15 * var(--scale));}
+    .ui{display:flex;gap:8px;justify-content:center;margin-top:8px}
+    button{background:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer}
+    .legend{color:#fff;font-size:13px;margin-top:6px;text-align:center}
+    code{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44'><rect rx='9' width='100%' height='100%' fill='%230b1220'/><text x='50%' y='55%' font-size='18' text-anchor='middle' fill='%23fbbf24' font-family='Verdana'>BM</text></svg>" alt="logo" style="width:44px;height:44px;border-radius:9px;">
-      <div>
-        <h1>Bell Madness — Clone léger</h1>
-        <div style="color:var(--muted);font-size:13px">But : découvrir des réactions en combinant des actions — sauvegarde automatique</div>
-      </div>
-    </header>
-
-    <section class="main-card">
-      <div class="game-area">
-        <div class="house" id="house">
-          <div class="reactions-log" id="log">Réactions découvertes : <strong id="foundCount">0</strong></div>
-          <div class="porch">
-            <div class="door" id="door">
-              <div class="bell" id="visibleBell">🔔</div>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:6px">
-              <button class="btn" id="knockBtn">Frapper</button>
-              <button class="btn" id="ringBtn">Sonner</button>
-            </div>
-          </div>
-          <div class="window">
-            <div style="width:90%;display:flex;flex-direction:column;align-items:center;gap:8px">
-              <div style="background:var(--glass);padding:8px;border-radius:8px;width:100%;text-align:center">Boîte aux lettres • Robinet • Fenêtre</div>
-              <div style="display:flex;gap:8px;margin-top:8px">
-                <button class="btn" id="mailBtn">Boîte aux lettres</button>
-                <button class="btn" id="waterBtn">Robinet</button>
-                <button class="btn" id="tapWindowBtn">Taper</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="display:flex;gap:8px;align-items:center">
-            <div class="btn" id="useHintBtn">Utiliser indice (<span id="hintsCount">0</span>)</div>
-            <div class="btn" id="collectBtn">Collecter pièces</div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <div style="color:var(--muted);font-size:13px">Progrès :</div>
-            <div class="progress" style="width:240px"><i id="progBar"></i></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <aside class="side">
-      <div class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div class="stats">
-            <div class="coin">🪙 <span id="coins">0</span></div>
-            <div style="width:10px"></div>
-            <div style="color:var(--muted);font-size:13px">Indices : <strong id="hints">0</strong></div>
-          </div>
-          <div><button class="btn" id="resetBtn">Réinitialiser</button></div>
-        </div>
-
-        <div style="margin-top:10px;font-size:13px;color:var(--muted)">Sonnette(s) débloquées :</div>
-        <div class="inventory" id="bellsList">
-          <!-- doorbells -->
-        </div>
-      </div>
-
-      <div class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>Réactions connues</strong>
-          <div style="color:var(--muted);font-size:13px">Découvertes : <span id="discoveries">0</span></div>
-        </div>
-        <div id="knownList" style="margin-top:8px;max-height:200px;overflow:auto;color:var(--muted);font-size:14px"></div>
-      </div>
-
-      <div class="panel">
-        <strong>Aide / Guide rapide</strong>
-        <ul style="margin-top:8px;color:var(--muted);font-size:13px">
-          <li>Cliquer sur les actions pour provoquer des réactions.</li>
-          <li>Collecter des pièces, acheter indices et nouvelles sonnettes.</li>
-          <li>Combinaisons = plus de réactions.</li>
-        </ul>
-      </div>
-    </aside>
-
-    <footer>Version clone — usage éducatif / projet GitHub • Sauvegarde locale via localStorage</footer>
+  <div class="stage">
+    <canvas id="map" width="640" height="480"></canvas>
+    <div class="ui">
+      <button id="zoomIn">Zoom +</button>
+      <button id="zoomOut">Zoom −</button>
+      <button id="toggleGrid">Grille</button>
+      <button id="center">Recentrer</button>
+    </div>
+    <div class="legend">Touches: <code>ZQSD</code> ou flèches — Clic pour téléporter — Map stylisée façon Pokémon Diamant</div>
   </div>
 
-  <script>
-  // --- Game Data ---
-  const ACTIONS = ['knock','ring','mail','water','tapWindow'];
+<script>
+// === Configuration ===
+const tileSize = 32; // base tile size in px
+const canvas = document.getElementById('map');
+const ctx = canvas.getContext('2d');
+let SCALE = 2; // visually scale the canvas using CSS (keeps pixel art sharp)
+const VIEW_TILES_X = 20; // how many tiles shown horizontally
+const VIEW_TILES_Y = 15; // vertically
 
-  // Example doorbells / unlockables
-  const DOORBELLS = [
-    {id:'basic',name:'Sonnette basique',cost:0,unlocked:true,emoji:'🔔'},
-    {id:'sneak',name:'Sonnette vicieuse',cost:120,unlocked:false,emoji:'🔕'},
-    {id:'loud',name:'Sonnette forte',cost:300,unlocked:false,emoji:'📯'},
-    {id:'myst',name:'Sonnette mystère',cost:700,unlocked:false,emoji:'🛎️'}
-  ];
+// camera in pixels
+const camera = { x:0, y:0 };
 
-  // Reactions dataset. Each reaction has a triggers array (action sequences/subset), a reward coins, description.
-  // Triggers may be single action or combos. This is a toy dataset; expand as needed.
-  const REACTIONS = [
-    {id:'r1',triggers:[['ring','ring']],desc:'Le voisin sort et grogne. Jette une tasse dorée.',coins:15,unlocked:false},
-    {id:'r2',triggers:[['knock','mail']],desc:'Découvre une lettre d\'amour, s’énerve.',coins:25,unlocked:false},
-    {id:'r3',triggers:[['water','tapWindow']],desc:'Le voisin glisse et la maison éternue (objet tombe).',coins:30,unlocked:false},
-    {id:'r4',triggers:[['ring','ring','ring']],desc:'Le voisin devient furieux — devient Méduse (gag).',coins:120,unlocked:false},
-    {id:'r5',triggers:[['knock','tapWindow','mail']],desc:'Grande scène : la maison se transforme.',coins:220,unlocked:false},
-    {id:'r6',triggers:[['mail']],desc:'Le courrier contient un trésor caché.',coins:8,unlocked:false},
-    {id:'r7',triggers:[['knock']],desc:'Toc toc, il regarde par la serrure.',coins:4,unlocked:false},
-    {id:'r8',triggers:[['water']],desc:'Le robinet éclate — surprend le voisin.',coins:6,unlocked:false}
-  ];
+// simple tileset: 0=grass,1=path,2=water,3=tree,4=rock,5=flower
+const tileNames = ['herbe','chemin','eau','arbre','roche','fleurs'];
 
-  // --- State ---
-  let state = {
-    coins: 0,
-    hints: 0,
-    unlockedBells: DOORBELLS.filter(d=>d.unlocked).map(d=>d.id),
-    discoveries: {}, // reactionId: true
-    progress: 0,
-    lastActions: [],
-    selectedBell: 'basic'
-  };
+// A small map array (W x H) using numbers above. You can edit this array to design your map.
+const MAP = [
+  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+  [2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2],
+  [2,2,2,2,1,0,0,0,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2],
+  [2,2,2,2,1,0,3,3,0,0,5,0,0,4,0,0,1,2,2,2,2,2,2,2],
+  [2,2,2,2,1,0,3,3,0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2],
+  [2,2,2,2,1,0,0,0,0,0,0,0,4,0,0,0,1,2,2,2,2,2,2,2],
+  [2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2],
+  [2,2,2,2,2,2,2,1,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,2],
+  [2,2,2,2,2,2,2,1,0,4,0,0,3,0,1,2,2,2,2,2,2,2,2,2],
+  [2,2,2,2,2,2,2,1,0,0,0,0,0,5,1,2,2,2,2,2,2,2,2,2],
+  [2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2],
+  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
+];
 
-  // Local storage keys
-  const SAVE_KEY = 'bellmadness_clone_v1';
+const MAP_H = MAP.length;
+const MAP_W = MAP[0].length;
 
-  // --- UI refs ---
-  const coinsEl = document.getElementById('coins');
-  const hintsEl = document.getElementById('hints');
-  const hintsCountEl = document.getElementById('hintsCount');
-  const foundCountEl = document.getElementById('foundCount');
-  const progBar = document.getElementById('progBar');
-  const knownList = document.getElementById('knownList');
-  const bellsList = document.getElementById('bellsList');
-  const discoveriesEl = document.getElementById('discoveries');
+// Player
+const player = {
+  tx: 3, ty: 4, // tile coords
+  x: 3 * tileSize + tileSize/2,
+  y: 4 * tileSize + tileSize/2,
+  speed: 140, // pixels per second
+  size: 18
+};
 
-  // init
-  function init(){
-    load();
-    renderBells();
-    updateUI();
-    attachHandlers();
-    log('Bienvenue — amuse-toi à découvrir les réactions !');
+// Controls
+const keys = {};
+window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+canvas.addEventListener('click', e => {
+  // teleport to clicked tile for quick testing
+  const rect = canvas.getBoundingClientRect();
+  const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const cy = (e.clientY - rect.top) * (canvas.height / rect.height);
+  const worldX = camera.x + cx;
+  const worldY = camera.y + cy;
+  const tx = Math.floor(worldX / tileSize);
+  const ty = Math.floor(worldY / tileSize);
+  if (tx >=0 && tx < MAP_W && ty >=0 && ty < MAP_H){
+    player.x = tx * tileSize + tileSize/2;
+    player.y = ty * tileSize + tileSize/2;
   }
+});
 
-  function save(){localStorage.setItem(SAVE_KEY,JSON.stringify(state));}
-  function load(){
-    const raw = localStorage.getItem(SAVE_KEY);
-    if(raw){
-      try{const parsed = JSON.parse(raw); state = Object.assign(state, parsed);}catch(e){console.warn('load failed',e)}
-    }
+// Helpers
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function isSolidTile(t){ // simple collision: trees and water and rock are solid
+  return t===2 || t===3 || t===4;
+}
+
+// Draw one tile at tile coordinates tx,ty at screen coords sx,sy
+function drawTile(t, sx, sy){
+  const s = tileSize;
+  ctx.save();
+  ctx.translate(sx, sy);
+  // base ground
+  if (t===0){ // grass
+    ctx.fillStyle = '#7fc844';
+    ctx.fillRect(0,0,s,s);
+    // little darker patches
+    ctx.fillStyle = '#6fbe3a';
+    for(let i=0;i<3;i++) ctx.fillRect(Math.random()*s, Math.random()*s, 4, 4);
+  } else if (t===1){ // path
+    ctx.fillStyle = '#d6b48b'; ctx.fillRect(0,0,s,s);
+    ctx.strokeStyle = '#b8926e'; ctx.lineWidth=2; ctx.strokeRect(2,2,s-4,s-4);
+  } else if (t===2){ // water
+    ctx.fillStyle = '#5aa8df'; ctx.fillRect(0,0,s,s);
+    // waves
+    ctx.fillStyle='rgba(255,255,255,0.08)';
+    for(let i=0;i<2;i++) ctx.fillRect(i*8+4,8,6,2);
+  } else if (t===3){ // tree over grass
+    ctx.fillStyle = '#7fc844'; ctx.fillRect(0,0,s,s);
+    // trunk
+    ctx.fillStyle='#6b4a2b'; ctx.fillRect(s/2-4,s-12,8,12);
+    // leaves
+    ctx.beginPath(); ctx.fillStyle='#1f8b2b'; ctx.ellipse(s/2, s/2 -2, 12, 10, 0, 0, Math.PI*2); ctx.fill();
+  } else if (t===4){ // rock
+    ctx.fillStyle = '#7fc844'; ctx.fillRect(0,0,s,s);
+    ctx.fillStyle = '#6e6e6e'; ctx.beginPath(); ctx.arc(s/2, s/2, 8, 0, Math.PI*2); ctx.fill();
+  } else if (t===5){ // flowers
+    ctx.fillStyle = '#7fc844'; ctx.fillRect(0,0,s,s);
+    ctx.fillStyle='#ff4f8b'; ctx.fillRect(8,12,4,4); ctx.fillRect(18,8,4,4);
+  } else {
+    ctx.fillStyle='#ff00ff'; ctx.fillRect(0,0,s,s);
   }
+  ctx.restore();
+}
 
-  function attachHandlers(){
-    document.getElementById('knockBtn').addEventListener('click',()=>action('knock'));
-    document.getElementById('ringBtn').addEventListener('click',()=>action('ring'));
-    document.getElementById('mailBtn').addEventListener('click',()=>action('mail'));
-    document.getElementById('waterBtn').addEventListener('click',()=>action('water'));
-    document.getElementById('tapWindowBtn').addEventListener('click',()=>action('tapWindow'));
-    document.getElementById('collectBtn').addEventListener('click',collectCoins);
-    document.getElementById('useHintBtn').addEventListener('click',useHint);
-    document.getElementById('resetBtn').addEventListener('click',resetGame);
-  }
+// Render entire visible area
+function render(){
+  // clear
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  function action(act){
-    // register last actions
-    state.lastActions.push(act);
-    if(state.lastActions.length>6) state.lastActions.shift();
+  const startCol = Math.floor(camera.x / tileSize);
+  const startRow = Math.floor(camera.y / tileSize);
+  const endCol = Math.ceil((camera.x + canvas.width) / tileSize);
+  const endRow = Math.ceil((camera.y + canvas.height) / tileSize);
 
-    // visual feedback
-    animateAction(act);
-
-    // reward small coin chance for simple actions
-    if(Math.random()<0.35){state.coins += Math.floor(1 + Math.random()*6);} // tiny coin drip
-
-    // Check reactions
-    checkReactions();
-
-    // small progress increase
-    state.progress = Math.min(100, state.progress + 0.6);
-    updateUI();
-    save();
-  }
-
-  function animateAction(act){
-    const door = document.getElementById('door');
-    const bubble = document.createElement('div');
-    bubble.className='pop';
-    bubble.style.position='absolute';
-    bubble.style.right='20px';
-    bubble.style.bottom='40px';
-    bubble.style.padding='8px 10px';
-    bubble.style.borderRadius='10px';
-    bubble.style.background='rgba(255,255,255,0.06)';
-    bubble.style.fontSize='13px';
-    bubble.style.color='var(--muted)';
-    bubble.textContent = {knock:'Toc',ring:'Ding',mail:'📫',water:'💧',tapWindow:'Tap'}[act] || act;
-    door.appendChild(bubble);
-    setTimeout(()=>bubble.remove(),900);
-  }
-
-  function checkReactions(){
-    // test each reaction: if any triggers array is subset of lastActions (order-insensitive)
-    REACTIONS.forEach(r=>{
-      if(state.discoveries[r.id]) return; // already found
-      for(const trig of r.triggers){
-        if(isSubset(trig, state.lastActions)){
-          discoverReaction(r);
-          break;
-        }
-      }
-    });
-  }
-
-  function isSubset(need, have){
-    // check that 'have' contains all elements of 'need' in any order with at least the multiplicity
-    const copy = [...have];
-    for(const n of need){
-      const idx = copy.indexOf(n);
-      if(idx===-1) return false;
-      copy.splice(idx,1);
-    }
-    return true;
-  }
-
-  function discoverReaction(r){
-    state.discoveries[r.id]=true;
-    state.coins += r.coins;
-    // small chance to grant a hint
-    if(Math.random()<0.2) state.hints++;
-    log("Découverte : "+r.desc+" — +"+r.coins+" pièces");
-    // increase progress more
-    state.progress = Math.min(100, state.progress + Math.min(28, r.coins/4));
-    updateUI();
-    save();
-    // unlock bells based on discoveries
-    maybeUnlockBells();
-  }
-
-  function maybeUnlockBells(){
-    const discoveredCount = Object.keys(state.discoveries).length;
-    if(discoveredCount>=2) unlockBell('sneak');
-    if(discoveredCount>=4) unlockBell('loud');
-    if(discoveredCount>=6) unlockBell('myst');
-  }
-
-  function unlockBell(id){
-    if(state.unlockedBells.includes(id)) return;
-    const bell = DOORBELLS.find(d=>d.id===id);
-    if(!bell) return;
-    if(state.coins >= bell.cost){
-      state.coins -= bell.cost;
-      state.unlockedBells.push(id);
-      log('Sonnette débloquée : '+bell.name);
-      renderBells();
-      updateUI();
-      save();
-    }
-  }
-
-  function renderBells(){
-    bellsList.innerHTML='';
-    for(const b of DOORBELLS){
-      const el = document.createElement('div');
-      el.className='item';
-      const unlocked = state.unlockedBells.includes(b.id);
-      el.innerHTML = `${b.emoji} <strong style='margin-left:6px'>${b.name}</strong><div style='font-size:12px;color:var(--muted)'>${unlocked? 'Débloquée' : 'Coûte '+b.cost+' pièces'}</div>`;
-      if(!unlocked){
-        const buy = document.createElement('button'); buy.className='btn'; buy.style.marginLeft='8px'; buy.style.padding='4px 6px'; buy.textContent='Acheter';
-        buy.addEventListener('click',()=>{ if(state.coins>=b.cost){ state.coins -= b.cost; state.unlockedBells.push(b.id); renderBells(); updateUI(); save(); log('Acheté : '+b.name);} else{log('Pas assez de pièces pour '+b.name);} });
-        el.appendChild(buy);
+  for(let row = startRow; row < endRow; row++){
+    for(let col = startCol; col < endCol; col++){
+      const sx = col * tileSize - camera.x;
+      const sy = row * tileSize - camera.y;
+      if (row>=0 && row<MAP_H && col>=0 && col<MAP_W){
+        drawTile(MAP[row][col], sx, sy);
       } else {
-        // select button
-        const sel = document.createElement('button'); sel.className='btn'; sel.style.marginLeft='8px'; sel.style.padding='4px 6px'; sel.textContent = (state.selectedBell===b.id? 'Sélectionnée' : 'Sélectionner');
-        sel.addEventListener('click',()=>{state.selectedBell=b.id; renderBells(); save(); updateUI();});
-        el.appendChild(sel);
-      }
-      bellsList.appendChild(el);
-    }
-  }
-
-  function collectCoins(){
-    // small boost based on progress and discoveries
-    const bonus = Math.floor(3 + state.progress*0.08 + Object.keys(state.discoveries).length*2 + Math.random()*8);
-    state.coins += bonus;
-    log('Collecte : +' + bonus + ' pièces');
-    // slight progress decay to encourage activity
-    state.progress = Math.max(0, state.progress - 6);
-    updateUI(); save();
-  }
-
-  function useHint(){
-    if(state.hints<=0){log('Aucun indice disponible');return}
-    state.hints--;
-    // reveal a random undiscovered reaction's partial hint
-    const undiscovered = REACTIONS.filter(r=>!state.discoveries[r.id]);
-    if(undiscovered.length===0){log('Tout est déjà découvert !');return}
-    const pick = undiscovered[Math.floor(Math.random()*undiscovered.length)];
-    // hint: show one action from its trigger
-    const someTrigger = pick.triggers[0];
-    const hintAction = someTrigger[Math.floor(Math.random()*someTrigger.length)];
-    log('Indice : essaie de combiner « ' + hintAction + ' » avec d\'autres actions.');
-    updateUI(); save();
-  }
-
-  function resetGame(){
-    if(!confirm('Réinitialiser la progression ?')) return;
-    localStorage.removeItem(SAVE_KEY);
-    location.reload();
-  }
-
-  function updateUI(){
-    coinsEl.textContent = state.coins;
-    hintsEl.textContent = state.hints;
-    hintsCountEl.textContent = state.hints;
-    foundCountEl.textContent = Object.keys(state.discoveries).length;
-    discoverries = Object.keys(state.discoveries).length;
-    discoveriesEl.textContent = Object.keys(state.discoveries).length;
-    // progress
-    progBar.style.width = state.progress + '%';
-
-    // known list
-    knownList.innerHTML = '';
-    for(const r of REACTIONS){
-      if(state.discoveries[r.id]){
-        const el = document.createElement('div'); el.style.padding='6px 0'; el.innerHTML = '• <strong>'+r.desc+'</strong> — +' + r.coins + ' pièces'; knownList.appendChild(el);
+        ctx.fillStyle='#2a8ee0'; ctx.fillRect(sx,sy,tileSize,tileSize);
       }
     }
   }
 
-  function log(msg){
-    const logEl = document.getElementById('log');
-    const time = new Date().toLocaleTimeString();
-    logEl.innerHTML = time + ' — ' + msg + '<br/>' + logEl.innerHTML;
+  // draw player shadow
+  ctx.fillStyle='rgba(0,0,0,0.2)';
+  ctx.beginPath(); ctx.ellipse(player.x - camera.x, player.y - camera.y + 12, player.size/1.8, player.size/3.5, 0, 0, Math.PI*2); ctx.fill();
+  // draw player (simple sprite)
+  ctx.save();
+  ctx.translate(player.x - camera.x, player.y - camera.y);
+  // body
+  ctx.fillStyle='#ffebcd'; ctx.fillRect(-6,-12,12,14);
+  // hat
+  ctx.fillStyle='#d62828'; ctx.fillRect(-8,-20,16,8);
+  // face
+  ctx.fillStyle='#3c3c3c'; ctx.fillRect(-3,-8,2,2); ctx.fillRect(1,-8,2,2);
+  ctx.restore();
+
+  // debug grid
+  if (SHOW_GRID){
+    ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=1;
+    for(let x=0;x<=canvas.width;x+=tileSize){ ctx.beginPath(); ctx.moveTo(x+.5,0); ctx.lineTo(x+.5,canvas.height); ctx.stroke(); }
+    for(let y=0;y<=canvas.height;y+=tileSize){ ctx.beginPath(); ctx.moveTo(0,y+.5); ctx.lineTo(canvas.width,y+.5); ctx.stroke(); }
+  }
+}
+
+let last = performance.now();
+let SHOW_GRID = false;
+
+function update(dt){
+  // movement with arrow keys or ZQSD
+  let dx=0, dy=0;
+  if (keys['arrowup'] || keys['z']) dy -= 1;
+  if (keys['arrowdown'] || keys['s']) dy += 1;
+  if (keys['arrowleft'] || keys['q']) dx -= 1;
+  if (keys['arrowright'] || keys['d']) dx += 1;
+  // normalize
+  if (dx !== 0 && dy !== 0){ dx *= Math.SQRT1_2; dy *= Math.SQRT1_2; }
+  const nextX = player.x + dx * player.speed * dt;
+  const nextY = player.y + dy * player.speed * dt;
+
+  // collision check: check the tile center we would occupy
+  const tileX = Math.floor(nextX / tileSize);
+  const tileY = Math.floor(nextY / tileSize);
+  if (tileX>=0 && tileX<MAP_W && tileY>=0 && tileY<MAP_H){
+    if (!isSolidTile(MAP[tileY][tileX])){
+      player.x = nextX; player.y = nextY;
+    } else {
+      // try axis-separated movement to allow sliding along obstacles
+      const tileXonly = Math.floor(nextX / tileSize);
+      const tileYonly = Math.floor(player.y / tileSize);
+      if (!isSolidTile(MAP[tileYonly][tileXonly])) player.x = nextX;
+      const tileXonly2 = Math.floor(player.x / tileSize);
+      const tileYonly2 = Math.floor(nextY / tileSize);
+      if (!isSolidTile(MAP[tileYonly2][tileXonly2])) player.y = nextY;
+    }
   }
 
-  // auto-save every 5s
-  setInterval(save,5000);
+  // camera follows player (center)
+  camera.x = player.x - canvas.width / 2;
+  camera.y = player.y - canvas.height / 2;
+  // clamp camera to map bounds
+  camera.x = clamp(camera.x, 0, MAP_W*tileSize - canvas.width);
+  camera.y = clamp(camera.y, 0, MAP_H*tileSize - canvas.height);
+}
 
-  // init
-  init();
-  </script>
+function loop(now){
+  const dt = (now - last) / 1000; last = now;
+  update(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+
+// initialize canvas pixel size based on tile & view and scale
+function resizeCanvas(){
+  canvas.width = tileSize * VIEW_TILES_X;
+  canvas.height = tileSize * VIEW_TILES_Y;
+  canvas.style.width = (tileSize * VIEW_TILES_X * SCALE) + 'px';
+  canvas.style.height = (tileSize * VIEW_TILES_Y * SCALE) + 'px';
+}
+resizeCanvas();
+
+// UI
+document.getElementById('zoomIn').addEventListener('click', ()=>{ SCALE = clamp(SCALE+0.5,1,4); resizeCanvas(); });
+document.getElementById('zoomOut').addEventListener('click', ()=>{ SCALE = clamp(SCALE-0.5,1,4); resizeCanvas(); });
+document.getElementById('toggleGrid').addEventListener('click', ()=>{ SHOW_GRID = !SHOW_GRID; });
+document.getElementById('center').addEventListener('click', ()=>{ camera.x = player.x - canvas.width/2; camera.y = player.y - canvas.height/2; camera.x = clamp(camera.x, 0, MAP_W*tileSize - canvas.width); camera.y = clamp(camera.y, 0, MAP_H*tileSize - canvas.height); });
+
+// start loop
+requestAnimationFrame(loop);
+
+// Helpful notes for customization (visible in dev console)
+console.log('Map loaded — éditer la constante MAP dans le code pour changer la carte.');
+console.log('tile index:', tileNames);
+</script>
 </body>
 </html>
