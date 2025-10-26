@@ -3,345 +3,172 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Encodeur — alphabet inventé (Encode & Decode)</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<title>Coder / Décoder fichier — clé mot</title>
 <style>
   :root{
-    --bg:#0f1724; --card:#0b1220; --muted:#94a3b8; --accent:#7c3aed; --glass: rgba(255,255,255,0.04);
-    --mono: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    --bg-1:#0f0b16;
+    --bg-2:#1a1226;
+    --accent-1:#7c3aed; /* violet */
+    --accent-2:#5b21b6;
+    --glass: rgba(255,255,255,0.04);
+    --ui-radius:14px;
+    --mono: "Segoe UI Mono", Menlo, monospace;
   }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:var(--mono);background:linear-gradient(180deg,#071028 0%, #0b1220 50%);color:#e6eef8}
-  .app{max-width:1100px;margin:32px auto;padding:28px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 10px 30px rgba(2,6,23,0.6)}
-  header{display:flex;align-items:center;gap:16px}
+  html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:#eee;background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent), radial-gradient(900px 400px at 90% 80%, rgba(91,33,182,0.08), transparent), linear-gradient(180deg,var(--bg-1),var(--bg-2));}
+  .wrap{max-width:880px;margin:6vh auto;padding:28px;border-radius:20px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow: 0 8px 30px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.03)}
+  header{display:flex;gap:16px;align-items:center}
+  .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;font-family:var(--mono);font-size:20px;box-shadow:0 6px 20px rgba(92,33,182,0.24)}
   h1{font-size:20px;margin:0}
-  p.lead{margin:6px 0 18px;color:var(--muted)}
-  .grid{display:grid;grid-template-columns:1fr 420px;gap:20px}
-  .card{background:var(--card);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-  textarea,input,select{width:100%;padding:12px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:inherit}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-  button{background:linear-gradient(90deg,var(--accent),#4f46e5);border:none;padding:10px 12px;border-radius:10px;color:white;font-weight:600;cursor:pointer}
-  .small{padding:8px 10px;font-size:14px}
-  .muted{color:var(--muted)}
-  .alphabet{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-  .glyph{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px;background:var(--glass);border-radius:8px;width:120px}
-  .glyph .preview{width:64px;height:64px;display:flex;align-items:center;justify-content:center}
-  .mapping-row{display:flex;gap:8px;align-items:center}
-  .mapping-row input{width:60px}
-  .toolbar{display:flex;gap:8px;align-items:center;justify-content:flex-end}
-  .big-output{font-size:20px;line-height:1.6;padding:12px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);border-radius:10px;min-height:120px;overflow:auto}
-  .accent-text{color:var(--accent);font-weight:700}
-  footer{margin-top:12px;color:var(--muted);font-size:13px}
-  .row{display:flex;gap:12px}
-  .flexcol{display:flex;flex-direction:column}
-  .example{font-size:13px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02)}
-  .pill{padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02);font-weight:600}
-  .kbd{background:rgba(255,255,255,0.02);padding:4px 8px;border-radius:6px;font-weight:700}
-  input[type=file]{display:none}
+  p.lead{margin:6px 0 18px;color:rgba(255,255,255,0.8)}
+
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
+
+  .panel{background:var(--glass);padding:18px;border-radius:var(--ui-radius);backdrop-filter: blur(6px);border:1px solid rgba(255,255,255,0.02)}
+
+  label{display:block;font-size:13px;color:#dcd6ff;margin-bottom:8px}
+  input[type=text]{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:#fff;font-size:15px}
+  input[type=file]{width:100%;color:#fff}
+
+  .controls{display:flex;flex-direction:column;gap:10px}
+  button{appearance:none;border:0;padding:12px 14px;border-radius:12px;font-weight:600;font-size:15px;cursor:pointer}
+  button#encode{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white}
+  button#decode{background:transparent;color:var(--accent-1);border:1px solid rgba(124,58,237,0.18)}
+
+  .info{font-size:13px;color:rgba(255,255,255,0.7);margin-top:8px}
+  .footer{margin-top:16px;font-size:13px;color:rgba(255,255,255,0.6)}
+  .small{font-size:12px;color:rgba(255,255,255,0.5)}
+
+  pre{white-space:pre-wrap;font-family:var(--mono);font-size:13px;color:#eae4ff;max-height:320px;overflow:auto;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(124,58,237,0.03), rgba(91,33,182,0.02));border:1px solid rgba(255,255,255,0.02)}
+
+  @media (max-width:900px){.grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div style="width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#0ea5a4);display:flex;align-items:center;justify-content:center;font-weight:800;color:#021124;font-size:28px">Σ</div>
-    <div>
-      <h1>Encodeur — crée ton alphabet inventé</h1>
-      <p class="lead">Encode et <strong>décode</strong> : clé réversible, export/import JSON, seed pour reproductibilité, glyphes SVG inline.</p>
-    </div>
-  </header>
+  <div class="wrap">
+    <header>
+      <div class="logo">CD</div>
+      <div>
+        <h1>Coder / Décoder un fichier — clé mot</h1>
+        <p class="lead">Sélectionnez un fichier, entrez **un mot** (clé) puis appuyez sur <strong>Coder</strong> ou <strong>Décoder</strong>. Le chiffrement est réversible : coder puis décoder avec la même clé restaure le fichier.</p>
+      </div>
+    </header>
 
-  <div class="grid">
-    <div>
-      <div class="card">
-        <label class="muted">Texte à encoder</label>
-        <textarea id="inputText" rows="5" placeholder="Écris ici...">Bonjour le monde — ceci est un test stylé.</textarea>
+    <div class="grid" style="margin-top:18px">
+      <div class="panel">
+        <label for="file">Fichier à traiter</label>
+        <input id="file" type="file" accept="*/*" />
+
+        <div style="height:12px"></div>
+
+        <label for="key">Clé (un mot uniquement)</label>
+        <input id="key" type="text" placeholder="Entrer la clé — par ex. monmot" autocomplete="off" />
+
+        <div style="height:18px"></div>
+
         <div class="controls">
-          <button id="encodeBtn">Encoder</button>
-          <button id="decodeBtn" class="small">Décoder</button>
-          <button id="randomizeBtn" class="small">Randomize (seed)</button>
-          <button id="genKeyBtn" class="small">Générer clé</button>
-          <div style="flex:1"></div>
-          <button id="exportBtn" class="small">Exporter clé (JSON)</button>
-          <input id="importFile" type="file" accept="application/json">
-          <button id="importBtn" class="small">Importer clé</button>
+          <button id="encode">Coder</button>
+          <button id="decode">Décoder</button>
         </div>
 
-        <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.02)">
-
-        <label class="muted">Clé d'encodage (editable)</label>
-        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
-          <input id="seedInput" placeholder="seed pour random (optionnel)" />
-          <button id="applySeed" class="small">Appliquer seed</button>
-          <div style="flex:1"></div>
-          <button id="resetBtn" class="small">Réinitialiser</button>
-        </div>
-
-        <div class="alphabet" id="alphabetContainer" aria-live="polite"></div>
+        <p class="info small">Technique utilisée : opération XOR octet-à-octet avec la clé répétée (UTF-8). Simple, rapide et réversible — n'offre pas de sécurité cryptographique forte mais suffit pour obfuscation et usages non sensibles.</p>
 
       </div>
 
-      <div style="height:12px"></div>
-      <div class="card">
-        <label class="muted">Résultat</label>
-        <div id="output" class="big-output" contenteditable="true"></div>
-        <div class="controls" style="margin-top:8px">
-          <button id="copyBtn">Copier</button>
-          <button id="downloadSVG" class="small">Télécharger SVG</button>
-          <div style="flex:1"></div>
-          <span class="muted">Mode :</span>
-          <select id="modeSelect">
-            <option value="glyph">Glyphes vectoriels</option>
-            <option value="char">Substitution (ASCII-like)</option>
-          </select>
-        </div>
-      </div>
-
-    </div>
-
-    <div>
-      <div class="card">
-        <label class="muted">Prévisualisation</label>
-        <div id="previewBar" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"></div>
-        <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.02)">
-        <label class="muted">Notes</label>
-        <p class="muted" style="margin-top:12px">La clé est un objet JSON qui mappe chaque caractère supporté à un glyph unique. Le décodage utilise l'inverse exact — garde les valeurs uniques !</p>
-        <p class="muted">Les glyphes sont rendus en SVG inline — télécharge l'encodage comme SVG.</p>
-      </div>
-
-      <div style="height:12px"></div>
-      <div class="card">
-        <label class="muted">Exemples / Raccourcis</label>
-        <div style="margin-top:8px"><span class="kbd">Ctrl+C</span> Copier, <span class="kbd">G</span> générer clé rapide.</div>
-      </div>
+      <aside class="panel">
+        <h3 style="margin-top:0">Aperçu / Journal</h3>
+        <pre id="log">Aucun fichier chargé.</pre>
+        <div class="footer">Téléchargement déclenché automatiquement après traitement. Aucun autre bouton ajouté, pour rester minimaliste.</div>
+      </aside>
     </div>
   </div>
 
-  <footer>Made with ❤ — personnalise, corrige, partage ta clé.</footer>
-</div>
-
 <script>
-// --- Utilitaires ---
-// PRNG deterministe basé sur une transformation simple de la seed
-function seedRandom(seed){
-  let h = 2166136261 >>> 0;
-  for (let i=0;i<seed.length;i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619) >>> 0;
-  return function(){
-    h += 0x6D2B79F5; h = Math.imul(h ^ (h >>> 15), 1) >>> 0; h ^= h + Math.imul(h ^ (h >>> 7), 61) >>> 0;
-    return ((h ^ (h >>> 14)) >>> 0) / 4294967296;
+(function(){
+  const fileInput = document.getElementById('file');
+  const keyInput = document.getElementById('key');
+  const encodeBtn = document.getElementById('encode');
+  const decodeBtn = document.getElementById('decode');
+  const log = document.getElementById('log');
+
+  function logMsg(...parts){
+    const now = new Date().toLocaleTimeString();
+    log.textContent = now + ' — ' + parts.join(' ') + '\n' + log.textContent;
   }
-}
 
-const DEFAULT_ALPH = 'abcdefghijklmnopqrstuvwxyzàâçéèêëîïôùûüÿ0123456789 .,;:!?-—()\\"\\'+"\\n".split('');
-function makeDefaultKey(){
-  const key = {};
-  for(let ch of DEFAULT_ALPH) key[ch]=generateGlyphLabel(ch);
-  return key;
-}
-function generateGlyphLabel(base){
-  const code = base.charCodeAt(0).toString(16).padStart(4,'0');
-  // default label is simple placeholder (not a full svg) so decoding works only if labels are consistent
-  return 'g_'+code;
-}
-
-// Génère un SVG "stylisé" et pseudo aléatoire (deterministe via rng)
-function genGlyphSVG(id, rng, size=64, stroke=3){
-  const w = size, h = size; const cx=w/2, cy=h/2;
-  const n = 3 + Math.floor(rng()*4);
-  let path = '';
-  for(let i=0;i<n;i++){
-    const a = rng()*Math.PI*2;
-    const r = (w*0.18) + rng()*(w*0.38);
-    const x = cx + Math.cos(a)*r;
-    const y = cy + Math.sin(a)*r;
-    if(i===0) path += `M ${x.toFixed(1)} ${y.toFixed(1)} `;
-    else path += `L ${x.toFixed(1)} ${y.toFixed(1)} `;
+  function getKeyBytes(key){
+    return new TextEncoder().encode(key);
   }
-  path += 'Z';
-  const arcAx = cx - rng()*w*0.3; const arcBy = cy + rng()*h*0.2;
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}' data-id='${id}'><g fill='none' stroke='currentColor' stroke-width='${stroke}' stroke-linecap='round' stroke-linejoin='round'><path d="${path}" opacity="0.12"/><path d="M${(cx).toFixed(1)} ${(cy).toFixed(1)} q ${(arcAx-cx).toFixed(1)} ${(arcBy-cy).toFixed(1)} ${( (arcAx-cx)/2 ).toFixed(1)} ${( (arcBy-cy)/2 ).toFixed(1)}"/></g></svg>`;
-  return svg;
-}
 
-// --- Etat app ---
-let KEY = makeDefaultKey();
-let INVERSE_KEY = {};
-let currentSeed = '';
-let currentRng = Math.random;
-
-function rebuildInverse(){
-  INVERSE_KEY = {};
-  for(let k in KEY){ INVERSE_KEY[KEY[k]] = k; }
-}
-rebuildInverse();
-
-// --- DOM refs ---
-const alphabetContainer = document.getElementById('alphabetContainer');
-const inputText = document.getElementById('inputText');
-const output = document.getElementById('output');
-const encodeBtn = document.getElementById('encodeBtn');
-const decodeBtn = document.getElementById('decodeBtn');
-const randomizeBtn = document.getElementById('randomizeBtn');
-const genKeyBtn = document.getElementById('genKeyBtn');
-const exportBtn = document.getElementById('exportBtn');
-const importBtn = document.getElementById('importBtn');
-const importFile = document.getElementById('importFile');
-const seedInput = document.getElementById('seedInput');
-const applySeed = document.getElementById('applySeed');
-const modeSelect = document.getElementById('modeSelect');
-const copyBtn = document.getElementById('copyBtn');
-const downloadSVG = document.getElementById('downloadSVG');
-const resetBtn = document.getElementById('resetBtn');
-const previewBar = document.getElementById('previewBar');
-
-// --- UI rendu clé ---
-function renderAlphabet(){
-  alphabetContainer.innerHTML='';
-  for(let ch of Object.keys(KEY)){
-    const wrapper = document.createElement('div'); wrapper.className='glyph';
-    const canvas = document.createElement('div'); canvas.className='preview'; canvas.innerHTML = KEY[ch];
-    const label = document.createElement('div'); label.style.fontSize='12px'; label.className='muted'; label.textContent = JSON.stringify(ch).slice(1,-1);
-    const edit = document.createElement('input'); edit.value = KEY[ch]; edit.title='Édite le label SVG/char (unique pour garder la réversibilité)';
-    edit.onchange = ()=>{ KEY[ch] = edit.value; rebuildInverse(); renderPreview(); };
-    wrapper.appendChild(canvas);
-    wrapper.appendChild(label);
-    wrapper.appendChild(edit);
-    alphabetContainer.appendChild(wrapper);
-  }
-}
-function renderPreview(){
-  previewBar.innerHTML='';
-  for(let ch of Object.keys(KEY)){
-    const el = document.createElement('div'); el.style.width='48px'; el.style.height='48px'; el.style.display='flex'; el.style.alignItems='center'; el.style.justifyContent='center'; el.style.borderRadius='8px'; el.style.background='rgba(255,255,255,0.02)';
-    el.innerHTML = KEY[ch]; previewBar.appendChild(el);
-  }
-}
-
-// --- Encoder / Décoder ---
-function escapeHtml(str){ return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function unescapeHtml(str){ return str.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"'); }
-
-function encodeText(text){
-  const pieces = [];
-  for(let ch of text){
-    if(KEY[ch]){
-      if(modeSelect.value==='glyph'){
-        pieces.push(`<span class='glyph-inline' data-label='${escapeHtml(KEY[ch])}'>${KEY[ch]}</span>`);
-      }else{
-        pieces.push(KEY[ch]);
-      }
-    }else{
-      pieces.push(escapeHtml(ch));
+  function xorBuffer(buffer, keyBytes){
+    const view = new Uint8Array(buffer);
+    const klen = keyBytes.length;
+    if(klen === 0) throw new Error('Clé vide');
+    for(let i=0;i<view.length;i++){
+      view[i] = view[i] ^ keyBytes[i % klen];
     }
+    return view; // modified in place
   }
-  return pieces.join('');
-}
 
-function decodeText(encodedHtml){
-  const temp = document.createElement('div'); temp.innerHTML = encodedHtml;
-  let out = '';
-  function traverse(node){
-    if(node.nodeType===3){ out += node.nodeValue; return; }
-    if(node.nodeType===1){
-      const dl = node.getAttribute && (node.getAttribute('data-label') || (node.dataset && node.dataset.label));
-      if(dl){
-        const label = unescapeHtml(dl);
-        if(INVERSE_KEY[label]!==undefined) out += INVERSE_KEY[label];
-        else out += ''; // label inconnu -> vide
-        return;
-      }
-      if(node.tagName && node.tagName.toLowerCase()==='svg'){
-        const s = node.outerHTML;
-        if(INVERSE_KEY[s]!==undefined) out += INVERSE_KEY[s];
-        else {
-          let found=false;
-          for(let k in INVERSE_KEY){ if(s.includes(k)){ out+=INVERSE_KEY[k]; found=true; break; } }
-          if(found) return;
+  function downloadBlob(blob, filename){
+    const a = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    // click silently
+    a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 5000);
+  }
+
+  async function processFile(mode){
+    const file = fileInput.files && fileInput.files[0];
+    const key = (keyInput.value || '').trim();
+    if(!file){ logMsg('Erreur : aucun fichier sélectionné.'); return; }
+    if(!key){ logMsg('Erreur : entrez une clé (un mot).'); return; }
+    try{
+      logMsg(mode, 'démarré pour', file.name, '(' + file.size + ' bytes)');
+      const arr = await file.arrayBuffer();
+      const keyBytes = getKeyBytes(key);
+      const processed = xorBuffer(arr, keyBytes); // in-place
+      let outName = file.name;
+      if(mode === 'Coder'){
+        outName = outName + '.enc';
+      } else {
+        // Décoder: si le nom finit par .enc on retire, sinon on ajoute .dec
+        if(outName.toLowerCase().endsWith('.enc')){
+          outName = outName.slice(0, -4);
+        } else {
+          outName = outName + '.dec';
         }
       }
-      for(let c of node.childNodes) traverse(c);
-      return;
+      const blob = new Blob([processed], {type: 'application/octet-stream'});
+      downloadBlob(blob, outName);
+      logMsg(mode, 'terminé — fichier généré :', outName);
+    } catch(err){
+      console.error(err);
+      logMsg('Erreur lors du traitement :', err.message || err);
     }
   }
-  for(let c of temp.childNodes) traverse(c);
-  return out;
-}
 
-// --- Actions UI ---
-encodeBtn.onclick = ()=>{ output.innerHTML = encodeText(inputText.value); };
-decodeBtn.onclick = ()=>{ const decoded = decodeText(output.innerHTML); inputText.value = decoded; alert('Texte décodé collé dans la zone d\\'entrée.'); };
+  encodeBtn.addEventListener('click', ()=>processFile('Coder'));
+  decodeBtn.addEventListener('click', ()=>processFile('Décoder'));
 
-genKeyBtn.onclick = ()=>{
-  const seed = seedInput.value || (Math.random()+''+Date.now());
-  currentSeed = seed; currentRng = seedRandom(seed);
-  const newKey = {};
-  const labels = [];
-  for(let i=0;i<DEFAULT_ALPH.length;i++) labels.push('g'+i+'_'+Math.floor(currentRng()*1e6));
-  for(let i=0;i<DEFAULT_ALPH.length;i++){
-    const ch = DEFAULT_ALPH[i];
-    newKey[ch] = genGlyphSVG(labels[i], currentRng, 64, 3);
-  }
-  KEY = newKey; rebuildInverse(); renderAlphabet(); renderPreview(); alert('Clé générée avec seed: '+seed);
-};
+  // small helper: show selected file
+  fileInput.addEventListener('change', ()=>{
+    if(fileInput.files && fileInput.files[0]){
+      const f = fileInput.files[0];
+      logMsg('Fichier chargé :', f.name, '('+f.size+' bytes)');
+    } else {
+      logMsg('Aucun fichier.');
+    }
+  });
 
-applySeed.onclick = ()=>{
-  const seed = seedInput.value.trim();
-  if(!seed){ alert('Entre un seed.'); return; }
-  currentSeed = seed; currentRng = seedRandom(seed);
-  const newKey = {};
-  for(let i=0;i<DEFAULT_ALPH.length;i++){
-    const label = 'g'+i+'_'+Math.floor(currentRng()*1e6);
-    newKey[DEFAULT_ALPH[i]] = genGlyphSVG(label, currentRng, 64, 3);
-  }
-  KEY = newKey; rebuildInverse(); renderAlphabet(); renderPreview();
-};
-
-randomizeBtn.onclick = ()=>{ const seed = prompt('Donne une seed (chaîne) pour randomizer de façon reproductible (laisser vide pour aléa):'); if(seed===null) return; if(seed.trim()===''){ KEY = makeDefaultKey(); rebuildInverse(); renderAlphabet(); renderPreview(); alert('Reset to default.'); } else { seedInput.value = seed; applySeed.click(); } };
-
-exportBtn.onclick = ()=>{
-  const data = {meta:{seed:currentSeed,mode:modeSelect.value,generatedAt:(new Date()).toISOString()},key:KEY};
-  const blob = new Blob([JSON.stringify(data, null, 2)],{type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'key-alphabet.json'; a.click(); URL.revokeObjectURL(url);
-};
-
-importBtn.onclick = ()=> importFile.click();
-importFile.onchange = (e)=>{
-  const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ()=>{
-    try{ const data = JSON.parse(r.result); if(data.key){ KEY = data.key; currentSeed = data.meta && data.meta.seed || ''; rebuildInverse(); renderAlphabet(); renderPreview(); alert('Clé importée.'); } else alert('Fichier invalide.'); }catch(err){ alert('Erreur JSON: '+err.message); } };
-  r.readAsText(f);
-};
-
-copyBtn.onclick = ()=>{ navigator.clipboard.writeText(output.innerText || output.textContent).then(()=>alert('Copié!'), ()=>alert('Impossible de copier')); };
-
-downloadSVG.onclick = ()=>{
-  let svgContent = '';
-  if(modeSelect.value==='glyph'){
-    const temp = document.createElement('div'); temp.innerHTML = output.innerHTML;
-    const svgs = temp.querySelectorAll('svg');
-    if(svgs.length===0){ alert('Aucun SVG détecté. Encode d\\'abord en mode glyph.'); return; }
-    const w=800; let y=0; const parts=[];
-    svgs.forEach((s,i)=>{ const vb = s.getAttribute('viewBox') || '0 0 64 64'; const h = parseInt(vb.split(' ')[3]||64); const inner = s.innerHTML; parts.push(`<g transform='translate(0 ${y})'>${inner}</g>`); y+=h+8; });
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${y}' viewBox='0 0 ${w} ${y}'>${parts.join('\n')}</svg>`;
-    svgContent = svg;
-  } else {
-    const text = output.textContent || output.innerText;
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='200'><text x='10' y='40' font-size='28'>${escapeHtml(text)}</text></svg>`;
-    svgContent = svg;
-  }
-  const blob = new Blob([svgContent],{type:'image/svg+xml'}); const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='encoded.svg'; a.click(); URL.revokeObjectURL(url);
-};
-
-resetBtn.onclick = ()=>{ if(confirm('Réinitialiser la clé au mapping par défaut ?')){ KEY = makeDefaultKey(); rebuildInverse(); renderAlphabet(); renderPreview(); } };
-
-// initial render
-renderAlphabet(); renderPreview();
-
-// raccourcis clavier
-window.addEventListener('keydown', (e)=>{
-  if(e.ctrlKey && e.key.toLowerCase()==='c'){ e.preventDefault(); copyBtn.click(); }
-  if(e.key.toLowerCase()==='g'){ genKeyBtn.click(); }
-});
+})();
 </script>
 </body>
 </html>
