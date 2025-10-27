@@ -1,174 +1,190 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Coder / Décoder fichier — clé mot</title>
-<style>
-  :root{
-    --bg-1:#0f0b16;
-    --bg-2:#1a1226;
-    --accent-1:#7c3aed; /* violet */
-    --accent-2:#5b21b6;
-    --glass: rgba(255,255,255,0.04);
-    --ui-radius:14px;
-    --mono: "Segoe UI Mono", Menlo, monospace;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:#eee;background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent), radial-gradient(900px 400px at 90% 80%, rgba(91,33,182,0.08), transparent), linear-gradient(180deg,var(--bg-1),var(--bg-2));}
-  .wrap{max-width:880px;margin:6vh auto;padding:28px;border-radius:20px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow: 0 8px 30px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.03)}
-  header{display:flex;gap:16px;align-items:center}
-  .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;font-family:var(--mono);font-size:20px;box-shadow:0 6px 20px rgba(92,33,182,0.24)}
-  h1{font-size:20px;margin:0}
-  p.lead{margin:6px 0 18px;color:rgba(255,255,255,0.8)}
-
-  .grid{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
-
-  .panel{background:var(--glass);padding:18px;border-radius:var(--ui-radius);backdrop-filter: blur(6px);border:1px solid rgba(255,255,255,0.02)}
-
-  label{display:block;font-size:13px;color:#dcd6ff;margin-bottom:8px}
-  input[type=text]{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));color:#fff;font-size:15px}
-  input[type=file]{width:100%;color:#fff}
-
-  .controls{display:flex;flex-direction:column;gap:10px}
-  button{appearance:none;border:0;padding:12px 14px;border-radius:12px;font-weight:600;font-size:15px;cursor:pointer}
-  button#encode{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white}
-  button#decode{background:transparent;color:var(--accent-1);border:1px solid rgba(124,58,237,0.18)}
-
-  .info{font-size:13px;color:rgba(255,255,255,0.7);margin-top:8px}
-  .footer{margin-top:16px;font-size:13px;color:rgba(255,255,255,0.6)}
-  .small{font-size:12px;color:rgba(255,255,255,0.5)}
-
-  pre{white-space:pre-wrap;font-family:var(--mono);font-size:13px;color:#eae4ff;max-height:320px;overflow:auto;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(124,58,237,0.03), rgba(91,33,182,0.02));border:1px solid rgba(255,255,255,0.02)}
-
-  @media (max-width:900px){.grid{grid-template-columns:1fr;}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Test de personnalité — « Boucle intérieure »</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7c3aed;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{background:linear-gradient(180deg,#081226 0%, #071028 60%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:24px}
+    .wrap{width:100%;max-width:880px}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    header h1{font-size:20px;margin:0}
+    .card{background:linear-gradient(180deg,var(--card),#071225);border-radius:14px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.6);backdrop-filter:blur(6px)}
+    p.lead{color:var(--muted);margin-top:8px}
+    form{margin-top:16px}
+    .q{display:grid;grid-template-columns:1fr 120px;gap:12px;padding:12px;border-radius:10px;background:var(--glass);margin-bottom:10px;align-items:center}
+    .q .text{font-size:14px}
+    .answers{display:flex;gap:6px;justify-content:flex-end}
+    label.btn{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);cursor:pointer}
+    input[type=radio]{display:none}
+    input[type=radio]:checked + .btn{background:linear-gradient(90deg,var(--accent),#4c1d95);box-shadow:0 6px 18px rgba(124,58,237,0.25);border:none}
+    footer.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+    button.primary{background:linear-gradient(90deg,var(--accent),#4c1d95);border:none;color:white;padding:10px 14px;border-radius:10px;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
+    .result{margin-top:16px;padding:14px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))}
+    .score{font-size:28px;font-weight:700}
+    .interpret{margin-top:8px;color:var(--muted)}
+    .hint{font-size:13px;color:var(--muted);margin-top:6px}
+    @media (max-width:640px){.q{grid-template-columns:1fr 1fr}.answers{justify-content:flex-start}}
+  </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <div class="logo">CD</div>
-      <div>
-        <h1>Coder / Décoder un fichier — clé mot</h1>
-        <p class="lead">Sélectionnez un fichier, entrez **un mot** (clé) puis appuyez sur <strong>Coder</strong> ou <strong>Décoder</strong>. Le chiffrement est réversible : coder puis décoder avec la même clé restaure le fichier.</p>
-      </div>
-    </header>
-
-    <div class="grid" style="margin-top:18px">
-      <div class="panel">
-        <label for="file">Fichier à traiter</label>
-        <input id="file" type="file" accept="*/*" />
-
-        <div style="height:12px"></div>
-
-        <label for="key">Clé (un mot uniquement)</label>
-        <input id="key" type="text" placeholder="Entrer la clé — par ex. monmot" autocomplete="off" />
-
-        <div style="height:18px"></div>
-
-        <div class="controls">
-          <button id="encode">Coder</button>
-          <button id="decode">Décoder</button>
+    <div class="card">
+      <header>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <rect width="24" height="24" rx="6" fill="#111827"></rect>
+          <path d="M12 3v18M3 12h18" stroke="#7c3aed" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div>
+          <h1>Test de personnalité — « Boucle intérieure »</h1>
+          <p class="lead">Mesure la tendance à <strong>refuser une part de soi</strong>, à tourner en boucle dans sa vie et à éprouver des difficultés à se transcender.</p>
         </div>
+      </header>
 
-        <p class="info small">Technique utilisée : opération XOR octet-à-octet avec la clé répétée (UTF-8). Simple, rapide et réversible — n'offre pas de sécurité cryptographique forte mais suffit pour obfuscation et usages non sensibles.</p>
+      <div>
+        <p class="hint">Instructions : Pour chaque affirmation, choisissez la réponse qui vous correspond le mieux (1 = Pas du tout, 5 = Tout à fait). Ce test est à visée introspective — il ne remplace pas un diagnostic professionnel.</p>
+
+        <form id="testForm">
+          <!-- 12 items -->
+
+          <!-- We'll generate questions via JS, kept in markup for clarity -->
+          <div id="questions"></div>
+
+          <footer class="actions">
+            <button type="button" class="ghost" id="resetBtn">Réinitialiser</button>
+            <button type="button" class="primary" id="submitBtn">Voir le résultat</button>
+          </footer>
+        </form>
+
+        <div id="resultBox" class="result" hidden aria-live="polite"></div>
 
       </div>
-
-      <aside class="panel">
-        <h3 style="margin-top:0">Aperçu / Journal</h3>
-        <pre id="log">Aucun fichier chargé.</pre>
-        <div class="footer">Téléchargement déclenché automatiquement après traitement. Aucun autre bouton ajouté, pour rester minimaliste.</div>
-      </aside>
     </div>
   </div>
 
-<script>
-(function(){
-  const fileInput = document.getElementById('file');
-  const keyInput = document.getElementById('key');
-  const encodeBtn = document.getElementById('encode');
-  const decodeBtn = document.getElementById('decode');
-  const log = document.getElementById('log');
+  <script>
+    // Questions crafted to probe three sub-dimensions: 1) Refus de soi / parts rejetées
+    // 2) Rigidité / répétition (boucle), 3) Difficulté de transcendance / stagnation
+    const questions = [
+      {id:1, text:"Je cache ou nie des aspects importants de moi-même par crainte du jugement."},
+      {id:2, text:"Je me surprends à répéter les mêmes erreurs ou choix insatisfaisants."},
+      {id:3, text:"Il m'est difficile d'accepter certaines émotions; je les repousse ou les minimise."},
+      {id:4, text:"Ma vie semble parfois enfermée dans une 'boucle' dont je ne trouve pas la sortie."},
+      {id:5, text:"Je ressens une lutte entre ce que je voudrais être et ce que je montre aux autres."},
+      {id:6, text:"Même quand je décide de changer, je retombe souvent dans d'anciens schémas."},
+      {id:7, text:"J'ai du mal à me transformer en profondeur, malgré mes efforts répétés."},
+      {id:8, text:"Je me sens parfois en décalage avec moi-même, comme si une part de moi était absente."},
+      {id:9, text:"Je rationalise mes comportements plutôt que d'en chercher la source émotionnelle."},
+      {id:10, text:"Je m'accroche à des routines ou relations qui ne me conviennent plus par confort."},
+      {id:11, text:"Je crains que changer profondément me fasse perdre qui je suis réellement."},
+      {id:12, text:"J'ai besoin d'aide extérieure (ami, thérapeute) pour voir ce que je ne veux pas voir."}
+    ];
 
-  function logMsg(...parts){
-    const now = new Date().toLocaleTimeString();
-    log.textContent = now + ' — ' + parts.join(' ') + '\n' + log.textContent;
-  }
+    const qContainer = document.getElementById('questions');
 
-  function getKeyBytes(key){
-    return new TextEncoder().encode(key);
-  }
-
-  function xorBuffer(buffer, keyBytes){
-    const view = new Uint8Array(buffer);
-    const klen = keyBytes.length;
-    if(klen === 0) throw new Error('Clé vide');
-    for(let i=0;i<view.length;i++){
-      view[i] = view[i] ^ keyBytes[i % klen];
+    function makeQuestion(q){
+      const div = document.createElement('div');
+      div.className = 'q';
+      div.innerHTML = `
+        <div class="text"><strong>${q.id}.</strong> ${q.text}</div>
+        <div class="answers" role="radiogroup" aria-labelledby="q${q.id}">
+          ${[1,2,3,4,5].map(n=>`
+            <label>
+              <input type="radio" name="q${q.id}" value="${n}" />
+              <span class="btn">${n}</span>
+            </label>`).join('')}
+        </div>
+      `;
+      return div;
     }
-    return view; // modified in place
-  }
 
-  function downloadBlob(blob, filename){
-    const a = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    a.href = url;
-    a.download = filename;
-    // click silently
-    a.style.display='none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 5000);
-  }
+    questions.forEach(q=> qContainer.appendChild(makeQuestion(q)));
 
-  async function processFile(mode){
-    const file = fileInput.files && fileInput.files[0];
-    const key = (keyInput.value || '').trim();
-    if(!file){ logMsg('Erreur : aucun fichier sélectionné.'); return; }
-    if(!key){ logMsg('Erreur : entrez une clé (un mot).'); return; }
-    try{
-      logMsg(mode, 'démarré pour', file.name, '(' + file.size + ' bytes)');
-      const arr = await file.arrayBuffer();
-      const keyBytes = getKeyBytes(key);
-      const processed = xorBuffer(arr, keyBytes); // in-place
-      let outName = file.name;
-      if(mode === 'Coder'){
-        outName = outName + '.enc';
-      } else {
-        // Décoder: si le nom finit par .enc on retire, sinon on ajoute .dec
-        if(outName.toLowerCase().endsWith('.enc')){
-          outName = outName.slice(0, -4);
-        } else {
-          outName = outName + '.dec';
-        }
+    // Utilities
+    function getScore(){
+      let score = 0; let answered = 0;
+      for(const q of questions){
+        const v = document.querySelector(`input[name=q${q.id}]:checked`);
+        if(v){ score += parseInt(v.value,10); answered++; }
       }
-      const blob = new Blob([processed], {type: 'application/octet-stream'});
-      downloadBlob(blob, outName);
-      logMsg(mode, 'terminé — fichier généré :', outName);
-    } catch(err){
-      console.error(err);
-      logMsg('Erreur lors du traitement :', err.message || err);
+      return {score, answered};
     }
-  }
 
-  encodeBtn.addEventListener('click', ()=>processFile('Coder'));
-  decodeBtn.addEventListener('click', ()=>processFile('Décoder'));
-
-  // small helper: show selected file
-  fileInput.addEventListener('change', ()=>{
-    if(fileInput.files && fileInput.files[0]){
-      const f = fileInput.files[0];
-      logMsg('Fichier chargé :', f.name, '('+f.size+' bytes)');
-    } else {
-      logMsg('Aucun fichier.');
+    function interpret(score){
+      // score range: 12..60
+      if(score <= 20) return {
+        level:'Faible — Peu de signes',
+        desc:`Vous montrez peu des signes mesurés par ce test. Vous êtes probablement en contact avec la plupart de vos parts et vous parvenez à casser les routines qui ne vous servent plus.`
+      };
+      if(score <= 36) return {
+        level:'Modéré — Boucle partielle',
+        desc:`Il existe certaines zones où vous rejetez une part de vous-même ou répétez des schémas. Cela peut créer des périodes de stagnation; identifier ces moments précis peut aider à amorcer un changement.`
+      };
+      return {
+        level:'Marqué — Boucle persistante',
+        desc:`Vous présentez des traits nets de refus d'une part de vous, et de répétition de schémas empêchant une véritable transformation. Un travail d'exploration (psychothérapie, écriture, pratiques somatiques) peut être utile pour retrouver de la fluidité.`
+      };
     }
-  });
 
-})();
-</script>
+    document.getElementById('submitBtn').addEventListener('click', ()=>{
+      const {score, answered} = getScore();
+      const box = document.getElementById('resultBox');
+      if(answered < questions.length){
+        box.hidden = false;
+        box.innerHTML = `<strong>Complétez toutes les affirmations</strong><div class="interpret">Vous avez répondu ${answered} / ${questions.length} items.</div>`;
+        return;
+      }
+      const it = interpret(score);
+      box.hidden = false;
+      box.innerHTML = `
+        <div class="score">Score : ${score} / ${questions.length*5}</div>
+        <div class="interpret"><strong>${it.level}</strong><div style="margin-top:8px">${it.desc}</div></div>
+        <div style="margin-top:12px;color:var(--muted)"><strong>Conseils pratiques :</strong>
+          <ul>
+            <li>Tenir un journal des moments où la "boucle" apparaît (déclencheur, pensées, émotions).</li>
+            <li>Tester une petite expérimentation ciblée (changer une routine <em>pendant</em> une semaine).</li>
+            <li>Explorer le dialogue intérieur : quelles parts de vous sont niées ? Qui a peur du changement ?</li>
+            <li>Si la situation vous pèse, envisager l'aide d'un professionnel (psychologue, thérapeute) pour un travail en profondeur.</li>
+          </ul>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="ghost" id="copyBtn">Copier le résultat</button>
+          <button class="primary" id="shareBtn">Télécharger (HTML)</button>
+        </div>
+      `;
+
+      // attach small interactions
+      document.getElementById('copyBtn').addEventListener('click', ()=>{
+        const summary = `Test "Boucle intérieure" — score ${score}/${questions.length*5} — ${it.level} : ${it.desc}`;
+        navigator.clipboard?.writeText(summary).then(()=>{
+          alert('Résumé copié dans le presse-papiers.');
+        }).catch(()=>alert('Impossible de copier — veuillez copier manuellement.'));
+      });
+
+      document.getElementById('shareBtn').addEventListener('click', ()=>{
+        // create a simplified result HTML and prompt download
+        const resultHtml = `<!doctype html><meta charset="utf-8"><title>Résultat — Boucle intérieure</title><style>body{font-family:Inter,system-ui;max-width:700px;margin:30px;padding:20px;background:#f7f9fc;color:#071229}</style><h1>Résultat du test — Boucle intérieure</h1><p>Score: ${score} / ${questions.length*5}</p><p>${it.level}</p><p>${it.desc}</p><p>Généré le ${new Date().toLocaleString()}</p>`;
+        const blob = new Blob([resultHtml], {type:'text/html;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'resultat-boucle-interieure.html'; document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      document.getElementById('testForm').reset();
+      const box = document.getElementById('resultBox'); box.hidden = true; box.innerHTML = '';
+    });
+
+    // small accessibility: focus first radio of first question when tabbing inside
+    const firstRadios = document.querySelectorAll('input[type=radio]');
+    if(firstRadios.length) firstRadios[0].tabIndex = 0;
+
+  </script>
 </body>
 </html>
