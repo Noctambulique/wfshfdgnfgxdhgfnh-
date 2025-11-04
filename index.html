@@ -71,16 +71,13 @@
     const questions = [
 {id:1, text:"Je rejette parfois des aspects de moi que je trouve faibles ou indésirables."},
 {id:2, text:"Il m'arrive de vivre des situations différentes qui finissent pourtant par se ressembler."},
-{id:3, text:"Quand une émotion me dépasse, j’ai tendance à me distraire plutôt que de l’accueillir."},
-{id:4, text:"Je ressens souvent un cycle : prise de conscience, espoir de changement, puis retour au point de départ."},
-{id:5, text:"Je sens un écart entre l’image que je donne et la personne que je veux devenir."},
-{id:6, text:"Certains de mes comportements semblent automatiques, comme dictés par un vieux scénario intérieur."},
-{id:7, text:"Je ressens parfois une inertie : savoir ce qu’il faudrait faire, sans parvenir à passer le cap."},
-{id:8, text:"Je remarque des moments où mon corps ou mes émotions disent autre chose que mes pensées."},
-{id:9, text:"Je cherche souvent à comprendre mes réactions par la logique plutôt qu’à les vivre pleinement."},
-{id:10, text:"Je garde parfois des habitudes ou des relations simplement parce qu’elles me sont familières."},
-{id:11, text:"L’idée de changer profondément suscite chez moi autant d’envie que d’appréhension."},
-{id:12, text:"Quand quelqu’un me confronte à un aspect de moi que je n’aime pas, ma première réaction est la défense."}
+{id:3, text:"Quand une émotion me dépasse, j’ai tendance à me distraire."},
+{id:5, text:"Certains de mes comportements semblent automatiques, comme dictés par un vieux scénario intérieur."},
+{id:6, text:"Je ressens parfois une inertie : savoir ce qu’il faudrait faire, sans parvenir à passer le cap."},
+{id:7, text:"Je cherche souvent à comprendre mes réactions par la logique plutôt qu’à les vivre pleinement."},
+{id:8, text:"Je garde parfois des habitudes ou des relations simplement parce qu’elles me sont familières."},
+{id:9, text:"L’idée de changer profondément suscite chez moi autant d’envie que d’appréhension."},
+{id:10, text:"Quand quelqu’un me confronte à un aspect de moi que je n’aime pas, ma première réaction est la défense."}
 ];
 
     const qContainer = document.getElementById('questions');
@@ -115,11 +112,11 @@
 
     function interpret(score){
       // score range: 12..60
-      if(score <= 20) return {
+      if(score <15) return {
         level:'Faible — Peu de signes',
         desc:`Vous montrez peu des signes mesurés par ce test. Vous êtes probablement en contact avec la plupart de vos parts et vous parvenez à casser les routines qui ne vous servent plus.`
       };
-      if(score <= 36) return {
+      if(score <= 20) return {
         level:'Modéré — Boucle partielle',
         desc:`Il existe certaines zones où vous rejetez une part de vous-même ou répétez des schémas. Cela peut créer des périodes de stagnation; identifier ces moments précis peut aider à amorcer un changement.`
       };
