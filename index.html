@@ -23,10 +23,11 @@
     footer.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
     button.primary{background:linear-gradient(90deg,var(--accent),#4c1d95);border:none;color:white;padding:10px 14px;border-radius:10px;cursor:pointer}
     button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
-    .result{margin-top:16px;padding:14px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))}
+    .result{margin-top:16px;padding:16px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))}
     .score{font-size:28px;font-weight:700}
     .interpret{margin-top:8px;color:var(--muted)}
     .hint{font-size:13px;color:var(--muted);margin-top:6px}
+    .reflection{margin-top:14px;font-size:14px;color:var(--muted);font-style:italic}
     @media (max-width:640px){.q{grid-template-columns:1fr 1fr}.answers{justify-content:flex-start}}
   </style>
 </head>
@@ -45,12 +46,9 @@
       </header>
 
       <div>
-        <p class="hint">Instructions : Pour chaque affirmation, choisissez la réponse qui vous correspond le mieux (1 = Pas du tout, 5 = Tout à fait). Ce test est à visée introspective — il ne remplace pas un diagnostic professionnel.</p>
+        <p class="hint">Instructions : Pour chaque affirmation, choisissez la réponse qui vous correspond le mieux (1 = Pas du tout, 5 = Tout à fait). Ce test est à visée introspective et vous permet d’en savoir un peu plus sur vous-même.</p>
 
         <form id="testForm">
-          <!-- 12 items -->
-
-          <!-- We'll generate questions via JS, kept in markup for clarity -->
           <div id="questions"></div>
 
           <footer class="actions">
@@ -66,19 +64,17 @@
   </div>
 
   <script>
-    // Questions crafted to probe three sub-dimensions: 1) Refus de soi / parts rejetées
-    // 2) Rigidité / répétition (boucle), 3) Difficulté de transcendance / stagnation
     const questions = [
-{id:1, text:"Je rejette parfois des aspects de moi que je trouve faibles ou indésirables."},
-{id:2, text:"Il m'arrive de vivre des situations différentes qui finissent pourtant par se ressembler."},
-{id:3, text:"Quand une émotion me dépasse, j’ai tendance à me distraire."},
-{id:5, text:"Certains de mes comportements semblent automatiques, comme dictés par un vieux scénario intérieur."},
-{id:6, text:"Je ressens parfois une inertie : savoir ce qu’il faudrait faire, sans parvenir à passer le cap."},
-{id:7, text:"Je cherche souvent à comprendre mes réactions par la logique plutôt qu’à les vivre pleinement."},
-{id:8, text:"Je garde parfois des habitudes ou des relations simplement parce qu’elles me sont familières."},
-{id:9, text:"L’idée de changer profondément suscite chez moi autant d’envie que d’appréhension."},
-{id:10, text:"Quand quelqu’un me confronte à un aspect de moi que je n’aime pas, ma première réaction est la défense."}
-];
+      {id:1, text:"Je rejette parfois des aspects de moi que je trouve faibles ou indésirables."},
+      {id:2, text:"Il m'arrive de vivre des situations différentes qui finissent pourtant par se ressembler."},
+      {id:3, text:"Quand une émotion me dépasse, j’ai tendance à me distraire."},
+      {id:5, text:"Certains de mes comportements semblent automatiques, comme dictés par un vieux scénario intérieur."},
+      {id:6, text:"Je ressens parfois une inertie : savoir ce qu’il faudrait faire, sans parvenir à passer le cap."},
+      {id:7, text:"Je cherche souvent à comprendre mes réactions par la logique plutôt qu’à les vivre pleinement."},
+      {id:8, text:"Je garde parfois des habitudes ou des relations simplement parce qu’elles me sont familières."},
+      {id:9, text:"L’idée de changer profondément suscite chez moi autant d’envie que d’appréhension."},
+      {id:10, text:"Quand quelqu’un me confronte à un aspect de moi que je n’aime pas, ma première réaction est la défense."}
+    ];
 
     const qContainer = document.getElementById('questions');
 
@@ -100,7 +96,6 @@
 
     questions.forEach(q=> qContainer.appendChild(makeQuestion(q)));
 
-    // Utilities
     function getScore(){
       let score = 0; let answered = 0;
       for(const q of questions){
@@ -111,18 +106,17 @@
     }
 
     function interpret(score){
-      // score range: 12..60
       if(score <15) return {
         level:'Faible — Peu de signes',
-        desc:`Vous montrez peu des signes mesurés par ce test. Vous êtes probablement en contact avec la plupart de vos parts et vous parvenez à casser les routines qui ne vous servent plus.`
+        desc:`Vous montrez peu de signes de stagnation ou de rejet intérieur. Vous êtes certainement en mouvement, ouvert aux différentes parts de vous-même.`
       };
       if(score <= 20) return {
         level:'Modéré — Boucle partielle',
-        desc:`Il existe certaines zones où vous rejetez une part de vous-même ou répétez des schémas. Cela peut créer des périodes de stagnation; identifier ces moments précis peut aider à amorcer un changement.`
+        desc:`Il existe certains moments où vos schémas intérieurs semblent vous retenir. Identifier ces zones avec douceur peut déjà amorcer un changement durable.`
       };
       return {
         level:'Marqué — Boucle persistante',
-        desc:`Vous présentez des traits nets de refus d'une part de vous, et de répétition de schémas empêchant une véritable transformation. Un travail d'exploration (psychothérapie, écriture, pratiques somatiques) peut être utile pour retrouver de la fluidité.`
+        desc:`Vous semblez présenter plusieurs traits associés à des schémas répétitifs ou du refus intérieur. Explorer ces zones avec aide (écriture, thérapie, pratiques somatiques) pourrait vous donner un nouvel élan.`
       };
     }
 
@@ -139,31 +133,8 @@
       box.innerHTML = `
         <div class="score">Score : ${score} / ${questions.length*5}</div>
         <div class="interpret"><strong>${it.level}</strong><div style="margin-top:8px">${it.desc}</div></div>
-        </div>
-        <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-          <button class="ghost" id="copyBtn">Copier le résultat</button>
-          <button class="primary" id="shareBtn">Télécharger (HTML)</button>
-        </div>
+        <div class="reflection">Prenez un moment pour penser à ce que ce résultat signifie pour vous — ce test n’est qu’un miroir, c’est à vous de choisir ce que vous voulez en faire.</div>
       `;
-
-      // attach small interactions
-      document.getElementById('copyBtn').addEventListener('click', ()=>{
-        const summary = `Test "Boucle intérieure" — score ${score}/${questions.length*5} — ${it.level} : ${it.desc}`;
-        navigator.clipboard?.writeText(summary).then(()=>{
-          alert('Résumé copié dans le presse-papiers.');
-        }).catch(()=>alert('Impossible de copier — veuillez copier manuellement.'));
-      });
-
-      document.getElementById('shareBtn').addEventListener('click', ()=>{
-        // create a simplified result HTML and prompt download
-        const resultHtml = `<!doctype html><meta charset="utf-8"><title>Résultat — Boucle intérieure</title><style>body{font-family:Inter,system-ui;max-width:700px;margin:30px;padding:20px;background:#f7f9fc;color:#071229}</style><h1>Résultat du test — Boucle intérieure</h1><p>Score: ${score} / ${questions.length*5}</p><p>${it.level}</p><p>${it.desc}</p><p>Généré le ${new Date().toLocaleString()}</p>`;
-        const blob = new Blob([resultHtml], {type:'text/html;charset=utf-8'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'resultat-boucle-interieure.html'; document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-      });
-
     });
 
     document.getElementById('resetBtn').addEventListener('click', ()=>{
@@ -171,7 +142,6 @@
       const box = document.getElementById('resultBox'); box.hidden = true; box.innerHTML = '';
     });
 
-    // small accessibility: focus first radio of first question when tabbing inside
     const firstRadios = document.querySelectorAll('input[type=radio]');
     if(firstRadios.length) firstRadios[0].tabIndex = 0;
 
