@@ -3,148 +3,182 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Test de personnalité — « Boucle intérieure »</title>
+  <title>Convertisseur Excel → Page HTML</title>
   <style>
-    :root{--bg:#0f1724;--card:#0b1220;--accent:#7c3aed;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
-    body{background:linear-gradient(180deg,#081226 0%, #071028 60%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:24px}
-    .wrap{width:100%;max-width:880px}
-    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
-    header h1{font-size:20px;margin:0}
-    .card{background:linear-gradient(180deg,var(--card),#071225);border-radius:14px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.6);backdrop-filter:blur(6px)}
-    p.lead{color:var(--muted);margin-top:8px}
-    form{margin-top:16px}
-    .q{display:grid;grid-template-columns:1fr 120px;gap:12px;padding:12px;border-radius:10px;background:var(--glass);margin-bottom:10px;align-items:center}
-    .q .text{font-size:14px}
-    .answers{display:flex;gap:6px;justify-content:flex-end}
-    label.btn{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);cursor:pointer}
-    input[type=radio]{display:none}
-    input[type=radio]:checked + .btn{background:linear-gradient(90deg,var(--accent),#4c1d95);box-shadow:0 6px 18px rgba(124,58,237,0.25);border:none}
-    footer.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
-    button.primary{background:linear-gradient(90deg,var(--accent),#4c1d95);border:none;color:white;padding:10px 14px;border-radius:10px;cursor:pointer}
-    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
-    .result{margin-top:16px;padding:16px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))}
-    .score{font-size:28px;font-weight:700}
-    .interpret{margin-top:8px;color:var(--muted)}
-    .hint{font-size:13px;color:var(--muted);margin-top:6px}
-    .reflection{margin-top:14px;font-size:14px;color:var(--muted);font-style:italic}
-    @media (max-width:640px){.q{grid-template-columns:1fr 1fr}.answers{justify-content:flex-start}}
+    body{font-family: system-ui, -apple-system,Segoe UI, Roboto, "Helvetica Neue", Arial; max-width:1100px;margin:28px auto;padding:0 18px;color:#111}
+    h1{font-size:1.4rem;margin-bottom:6px}
+    .controls{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+    label{display:flex;flex-direction:column;font-size:0.9rem}
+    input[type=file]{padding:6px}
+    select, button, input[type=checkbox]{margin-top:6px}
+    .preview{margin-top:14px;border:1px solid #ddd;padding:12px;border-radius:8px;overflow:auto;background:#fff}
+    textarea{width:100%;height:300px;padding:10px;font-family:monospace;font-size:0.9rem;border-radius:6px;border:1px solid #ccc}
+    .row{display:flex;gap:12px;align-items:center}
+    .small{font-size:0.85rem;color:#444}
+    .btn{padding:8px 12px;border-radius:6px;border:1px solid #888;background:#f3f3f3;cursor:pointer}
+    .btn:active{transform:translateY(1px)}
+    footer{margin-top:18px;color:#666;font-size:0.85rem}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <header>
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <rect width="24" height="24" rx="6" fill="#111827"></rect>
-          <path d="M12 3v18M3 12h18" stroke="#7c3aed" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <div>
-          <h1>Test de personnalité — « Boucle intérieure »</h1>
-          <p class="lead">Mesure la tendance à <strong>refuser une part de soi</strong>, à tourner en boucle dans sa vie et à éprouver des difficultés à se transcender.</p>
-        </div>
-      </header>
+  <h1>Convertisseur Excel → code HTML</h1>
+  <p class="small">Téléverse un fichier Excel (.xlsx, .xls) ou CSV. Choisis une feuille, puis génère le code HTML de la table ou une page HTML complète.</p>
 
-      <div>
-        <p class="hint">Instructions : Pour chaque affirmation, choisissez la réponse qui vous correspond le mieux (1 = Pas du tout, 5 = Tout à fait). Ce test est à visée introspective et vous permet d’en savoir un peu plus sur vous-même.</p>
+  <div class="controls">
+    <label>Fichier Excel (.xlsx/.xls/.csv)
+      <input id="file" type="file" accept=".xlsx,.xls,.csv" />
+    </label>
 
-        <form id="testForm">
-          <div id="questions"></div>
+    <label>Feuille
+      <select id="sheetSelect" disabled></select>
+    </label>
 
-          <footer class="actions">
-            <button type="button" class="ghost" id="resetBtn">Réinitialiser</button>
-            <button type="button" class="primary" id="submitBtn">Voir le résultat</button>
-          </footer>
-        </form>
+    <label>Type de sortie
+      <select id="outType">
+        <option value="table">Fragment &lt;table&gt;</option>
+        <option value="page">Page HTML complète</option>
+      </select>
+    </label>
 
-        <div id="resultBox" class="result" hidden aria-live="polite"></div>
+    <label class="row">
+      <input id="includeStyles" type="checkbox" checked />
+      <span class="small">Inclure styles simples</span>
+    </label>
 
-      </div>
-    </div>
+    <button id="generate" class="btn">Générer</button>
+    <button id="copy" class="btn">Copier le code</button>
+    <button id="download" class="btn">Télécharger .html</button>
   </div>
 
+  <div class="preview">
+    <div id="previewWrap">Aucune feuille chargée.</div>
+  </div>
+
+  <h3>Code HTML généré</h3>
+  <textarea id="htmlOut" placeholder="Le code HTML apparaitra ici..." readonly></textarea>
+
+  <footer>Basé sur <em>SheetJS</em> (librairie JS). Testé avec fichiers .xlsx/.csv.</footer>
+
+  <!-- SheetJS (utilisé pour lire Excel dans le navigateur) -->
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+
   <script>
-    const questions = [
-      {id:1, text:"Je rejette parfois des aspects de moi que je trouve faibles ou indésirables."},
-      {id:2, text:"Il m'arrive de vivre des situations différentes qui finissent pourtant par se ressembler."},
-      {id:3, text:"Quand une émotion me dépasse, j’ai tendance à me distraire."},
-      {id:5, text:"Certains de mes comportements semblent automatiques, comme dictés par un vieux scénario intérieur."},
-      {id:6, text:"Je ressens parfois une inertie : savoir ce qu’il faudrait faire, sans parvenir à passer le cap."},
-      {id:7, text:"Je cherche souvent à comprendre mes réactions par la logique plutôt qu’à les vivre pleinement."},
-      {id:8, text:"Je garde parfois des habitudes ou des relations simplement parce qu’elles me sont familières."},
-      {id:9, text:"L’idée de changer profondément suscite chez moi autant d’envie que d’appréhension."},
-      {id:10, text:"Quand quelqu’un me confronte à un aspect de moi que je n’aime pas, ma première réaction est la défense."}
-    ];
+    const fileInput = document.getElementById('file');
+    const sheetSelect = document.getElementById('sheetSelect');
+    const previewWrap = document.getElementById('previewWrap');
+    const htmlOut = document.getElementById('htmlOut');
+    const generateBtn = document.getElementById('generate');
+    const copyBtn = document.getElementById('copy');
+    const downloadBtn = document.getElementById('download');
+    const outType = document.getElementById('outType');
+    const includeStyles = document.getElementById('includeStyles');
 
-    const qContainer = document.getElementById('questions');
+    let workbook = null;
 
-    function makeQuestion(q){
-      const div = document.createElement('div');
-      div.className = 'q';
-      div.innerHTML = `
-        <div class="text"><strong>${q.id}.</strong> ${q.text}</div>
-        <div class="answers" role="radiogroup" aria-labelledby="q${q.id}">
-          ${[1,2,3,4,5].map(n=>`
-            <label>
-              <input type="radio" name="q${q.id}" value="${n}" />
-              <span class="btn">${n}</span>
-            </label>`).join('')}
-        </div>
-      `;
-      return div;
-    }
+    fileInput.addEventListener('change', async (e) => {
+      const f = e.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const data = ev.target.result;
+        try{
+          // lecture binaire du workbook
+          const wb = XLSX.read(data, {type: 'binary'});
+          workbook = wb;
+          populateSheetList(wb.SheetNames);
+          sheetSelect.disabled = false;
+          renderPreview(sheetSelect.value || wb.SheetNames[0]);
+        }catch(err){
+          // fallback pour CSV (FileReader peut envoyer texte)
+          try{
+            const wb2 = XLSX.read(data, {type:'string'});
+            workbook = wb2;
+            populateSheetList(wb2.SheetNames);
+            sheetSelect.disabled = false;
+            renderPreview(sheetSelect.value || wb2.SheetNames[0]);
+          }catch(e){
+            previewWrap.innerText = 'Erreur de lecture du fichier : ' + e.message;
+            htmlOut.value = '';
+          }
+        }
+      };
 
-    questions.forEach(q=> qContainer.appendChild(makeQuestion(q)));
-
-    function getScore(){
-      let score = 0; let answered = 0;
-      for(const q of questions){
-        const v = document.querySelector(`input[name=q${q.id}]:checked`);
-        if(v){ score += parseInt(v.value,10); answered++; }
+      // lire en binaire si possible
+      if(f.name.toLowerCase().endsWith('.csv')){
+        reader.readAsText(f);
+      }else{
+        reader.readAsBinaryString(f);
       }
-      return {score, answered};
-    }
-
-    function interpret(score){
-      if(score <15) return {
-        level:'Faible — Peu de signes',
-        desc:`Vous montrez peu de signes de stagnation ou de rejet intérieur. Vous êtes certainement en mouvement, ouvert aux différentes parts de vous-même.`
-      };
-      if(score <= 20) return {
-        level:'Modéré — Boucle partielle',
-        desc:`Il existe certains moments où vos schémas intérieurs semblent vous retenir. Identifier ces zones avec douceur peut déjà amorcer un changement durable.`
-      };
-      return {
-        level:'Marqué — Boucle persistante',
-        desc:`Vous semblez présenter plusieurs traits associés à des schémas répétitifs ou du refus intérieur. Explorer ces zones avec aide (écriture, thérapie, pratiques somatiques) pourrait vous donner un nouvel élan.`
-      };
-    }
-
-    document.getElementById('submitBtn').addEventListener('click', ()=>{
-      const {score, answered} = getScore();
-      const box = document.getElementById('resultBox');
-      if(answered < questions.length){
-        box.hidden = false;
-        box.innerHTML = `<strong>Complétez toutes les affirmations</strong><div class="interpret">Vous avez répondu ${answered} / ${questions.length} items.</div>`;
-        return;
-      }
-      const it = interpret(score);
-      box.hidden = false;
-      box.innerHTML = `
-        <div class="score">Score : ${score} / ${questions.length*5}</div>
-        <div class="interpret"><strong>${it.level}</strong><div style="margin-top:8px">${it.desc}</div></div>
-        <div class="reflection">Prenez un moment pour penser à ce que ce résultat signifie pour vous — ce test n’est qu’un miroir, c’est à vous de choisir ce que vous voulez en faire.</div>
-      `;
     });
 
-    document.getElementById('resetBtn').addEventListener('click', ()=>{
-      document.getElementById('testForm').reset();
-      const box = document.getElementById('resultBox'); box.hidden = true; box.innerHTML = '';
+    function populateSheetList(names){
+      sheetSelect.innerHTML = '';
+      names.forEach((s,i)=>{
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        sheetSelect.appendChild(opt);
+      });
+    }
+
+    sheetSelect.addEventListener('change', ()=>{
+      renderPreview(sheetSelect.value);
     });
 
-    const firstRadios = document.querySelectorAll('input[type=radio]');
-    if(firstRadios.length) firstRadios[0].tabIndex = 0;
+    function renderPreview(sheetName){
+      if(!workbook) return;
+      const sheet = workbook.Sheets[sheetName];
+      if(!sheet){ previewWrap.innerText = 'Feuille introuvable.'; return; }
+      const html = XLSX.utils.sheet_to_html(sheet, {id: 'sheet-table', editable: false});
+      previewWrap.innerHTML = html;
+      // small visual cleanup
+      const tbl = previewWrap.querySelector('table');
+      if(tbl){ tbl.style.borderCollapse = 'collapse'; tbl.querySelectorAll('td,th').forEach(c=>{ c.style.border='1px solid #ddd'; c.style.padding='6px' }); }
+    }
 
+    generateBtn.addEventListener('click', ()=>{
+      if(!workbook){ alert('Chargez d’abord un fichier Excel.'); return; }
+      const sheetName = sheetSelect.value || workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const tableHtml = XLSX.utils.sheet_to_html(sheet, {id: 'sheet-table', editable: false});
+
+      if(outType.value === 'table'){
+        let code = tableHtml;
+        if(includeStyles.checked){
+          code = `<style>table{border-collapse:collapse}table td,table th{border:1px solid #ddd;padding:6px}</style>\n` + code;
+        }
+        htmlOut.value = code;
+      }else{
+        // page complète
+        const styles = includeStyles.checked ? `<style>body{font-family:system-ui,Arial;margin:20px}table{border-collapse:collapse}table td,table th{border:1px solid #ddd;padding:6px}</style>` : '';
+        const full = `<!doctype html>\n<html lang="fr">\n<head>\n<meta charset="utf-8">\n<meta name=viewport content=width=device-width,initial-scale=1>\n<title>Table - ${escapeHtml(sheetName)}</title>\n${styles}\n</head>\n<body>\n<h1>Feuille: ${escapeHtml(sheetName)}</h1>\n${tableHtml}\n</body>\n</html>`;
+        htmlOut.value = full;
+      }
+    });
+
+    copyBtn.addEventListener('click', async ()=>{
+      if(!htmlOut.value){ alert('Aucun code à copier.'); return; }
+      try{
+        await navigator.clipboard.writeText(htmlOut.value);
+        alert('Code copié dans le presse-papiers.');
+      }catch(e){
+        // fallback
+        htmlOut.select(); document.execCommand('copy');
+        alert('Code copié (fallback).');
+      }
+    });
+
+    downloadBtn.addEventListener('click', ()=>{
+      if(!htmlOut.value){ alert('Générez le code avant de télécharger.'); return; }
+      const blob = new Blob([htmlOut.value], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'table.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // small helper to escape title
+    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   </script>
 </body>
 </html>
